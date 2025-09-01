@@ -238,7 +238,7 @@ const Services = () => {
                       </motion.div>
 
                       <CardTitle className="text-2xl mb-3 group-hover:text-primary transition-colors">
-                        {service.name}
+                        {service.title}
                       </CardTitle>
                       <p className="text-muted-foreground leading-relaxed">{service.description}</p>
 
