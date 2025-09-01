@@ -86,7 +86,7 @@ ${formData.message}`,
           timeline: "",
           message: "",
         })
-      }, 3000)
+      }, 19000)
     } catch (error) {
       console.error("Error submitting contact form:", error)
       toast.error("Failed to send message. Please try again.")
@@ -99,20 +99,20 @@ ${formData.message}`,
     {
       icon: Mail,
       label: "Email",
-      value: "hello@hamzatahir.com",
-      href: "mailto:hello@hamzatahir.com",
+      value: "mhamzatahir048@gmail.com",
+      href: "mailto:mhamzatahir048@gmail.com",
     },
     {
       icon: Phone,
       label: "Phone",
-      value: "+1 (555) 123-4567",
-      href: "tel:+15551234567",
+      value: "+92 (308) 502-6488",
+      href: "tel:+923085026488",
     },
     {
       icon: MapPin,
       label: "Location",
-      value: "New York, NY",
-      href: "#",
+      value: "Lahore Punjab Pakistan",
+      href: "https://share.google/CAZ8Xka7M4w0OMDhy",
     },
   ]
 

@@ -143,7 +143,7 @@ const About = () => {
                   {profileImage && (
                     <div className="mb-6 flex justify-center">
                       <Image
-                        src={profileImage || "/placeholder.svg"}
+                        src={profileImage || "https://media.licdn.com/dms/image/v2/D4D03AQFJmCMo6-2e8A/profile-displayphoto-shrink_800_800/B4DZW5lS0VH4Ac-/0/1742575317339?e=1759363200&v=beta&t=D8h8R6pW6piz-HAlY0UM-A1CVCftnt9jNupsJlQ-mfM"}
                         alt={fullName}
                         width={200}
                         height={200}
@@ -204,7 +204,8 @@ const About = () => {
                             <span className="font-medium">{skill}</span>
                             <span className="text-sm text-muted-foreground">{level}%</span>
                           </div>
-                          <Progress value={currentProgress} className="h-2" />
+                          <Progress value={currentProgress}   className="h-2 [&>div]:bg-primary" />
+                          
                         </motion.div>
                       )
                     })}
@@ -215,40 +216,95 @@ const About = () => {
           </div>
 
           {/* Timeline Section */}
-          <motion.div variants={itemVariants} className="mt-16">
-            <h3 className="text-3xl font-bold text-center mb-12 flex items-center justify-center gap-2">
-              <Calendar className="w-8 h-8 text-primary" />
-              Experience & Education
-            </h3>
-            <div className="max-w-4xl mx-auto">
-              {timeline.map((item, index) => (
-                <motion.div
-                  key={index}
-                  className="flex items-start mb-8 last:mb-0"
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.2 }}
-                >
-                  <div className="flex-shrink-0 w-24 text-right mr-8">
-                    <Badge variant={item.type === "work" ? "default" : "secondary"}>{item.year}</Badge>
-                  </div>
-                  <div className="flex-shrink-0 w-4 h-4 bg-primary rounded-full mt-2 mr-8 relative">
-                    {index < timeline.length - 1 && (
-                      <div className="absolute top-4 left-1/2 w-0.5 h-16 bg-border -translate-x-1/2"></div>
-                    )}
-                  </div>
-                  <Card className="flex-1">
-                    <CardContent className="p-6">
-                      <h4 className="font-bold text-lg mb-1">{item.title}</h4>
-                      <p className="text-primary font-medium mb-2">{item.company}</p>
-                      <p className="text-muted-foreground">{item.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+          {/* Timeline Section */}
+<motion.div variants={itemVariants} className="mt-20">
+  <h3 className="text-3xl font-bold text-center mb-16 flex items-center justify-center gap-2">
+    <Calendar className="w-8 h-8 text-primary" />
+    Experience & Education
+  </h3>
+
+  <div className="relative max-w-5xl mx-auto px-4">
+    {/* Vertical timeline line (desktop only) */}
+    <div className="hidden md:block absolute left-1/2 top-0 w-1 h-full bg-border -translate-x-1/2"></div>
+
+    {timeline.map((item, index) => {
+      const isLeft = index % 2 === 0
+
+      return (
+        <motion.div
+          key={index}
+          className="mb-12 flex flex-col md:flex-row items-center md:items-start"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.2 }}
+        >
+          {/* Left column (for desktop alternating layout) */}
+          <div
+            className={`hidden md:flex w-5/12 ${
+              isLeft ? "justify-end pr-8" : "justify-start pl-8"
+            }`}
+          >
+            {isLeft && (
+              <Card className="shadow-lg max-w-md w-full">
+                <CardContent className="p-6">
+                  <h4 className="font-bold text-xl mb-1">{item.title}</h4>
+                  <p className="text-primary font-medium mb-2">{item.company}</p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Timeline Dot + Year */}
+          <div className="relative flex items-center justify-center md:w-2/12 mb-6 md:mb-0">
+            <div className="w-8 h-8 bg-primary rounded-full shadow-md flex items-center justify-center">
+              <span className="sr-only">{item.year}</span>
             </div>
-          </motion.div>
+            <span className="absolute -bottom-6 text-xs font-semibold text-muted-foreground md:static md:ml-2">
+              {item.year}
+            </span>
+          </div>
+
+          {/* Right column (for desktop alternating layout) */}
+          <div
+            className={`hidden md:flex w-5/12 ${
+              isLeft ? "justify-start pl-8" : "justify-end pr-8"
+            }`}
+          >
+            {!isLeft && (
+              <Card className="shadow-lg max-w-md w-full">
+                <CardContent className="p-6">
+                  <h4 className="font-bold text-xl mb-1">{item.title}</h4>
+                  <p className="text-primary font-medium mb-2">{item.company}</p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Mobile Layout (always full width under dot) */}
+          <div className="md:hidden w-full">
+            <Card className="shadow-lg">
+              <CardContent className="p-6">
+                <h4 className="font-bold text-xl mb-1">{item.title}</h4>
+                <p className="text-primary font-medium mb-2">{item.company}</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  {item.description}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
+      )
+    })}
+  </div>
+</motion.div>
+
         </motion.div>
       </div>
     </section>

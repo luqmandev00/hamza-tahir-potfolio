@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowDown, Github, Linkedin, Mail, Sparkles } from "lucide-react"
+import { ArrowDown, Github, Linkedin, Mail, Sparkles, Phone, Facebook} from "lucide-react"
 import { useEffect, useState } from "react"
 import { useSiteSettings } from "@/lib/hooks/use-site-settings"
 
@@ -214,14 +214,20 @@ const Hero = () => {
           >
             {[
               {
-                icon: Github,
-                href: settings.github_url || "#",
-                label: "GitHub",
+                icon: Phone,
+                href: "https://wa.me/message/LXOEJFHQLQHKK1",
+                label: "WhatsApp",
+                color: "hover:text-gray-900 dark:hover:text-gray-100",
+              },
+                 {
+                icon: Facebook,
+                href: "https://www.facebook.com/Hamzatahir13/",
+                label: "Facebook",
                 color: "hover:text-gray-900 dark:hover:text-gray-100",
               },
               {
                 icon: Linkedin,
-                href: settings.linkedin_url || "#",
+                href: settings.linkedin_url || "https://www.linkedin.com/in/muhammad-hamza-tahir/",
                 label: "LinkedIn",
                 color: "hover:text-blue-600",
               },
