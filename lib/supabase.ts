@@ -2,77 +2,29 @@
 
 import { createClient } from "@supabase/supabase-js"
 
-// Environment variables with fallback
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Check if Supabase is configured
-const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl !== "" && supabaseAnonKey !== ""
-
-// Create Supabase client only if configured
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-      db: {
-        schema: "public",
-      },
-      global: {
-        headers: {
-          "x-application-name": "hamza-portfolio",
-        },
-      },
-    })
-  : null
-
-// Cache system for better performance
-const cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
-
-const CACHE_TTL = {
-  projects: 5 * 60 * 1000, // 5 minutes
-  blog: 10 * 60 * 1000, // 10 minutes
-  services: 15 * 60 * 1000, // 15 minutes
-  snippets: 10 * 60 * 1000, // 10 minutes
-  default: 5 * 60 * 1000, // 5 minutes
+// Environment variable validation
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn("⚠️ Supabase environment variables are missing. Using mock data fallback.")
 }
 
-// Cache utilities
-export const cacheUtils = {
-  get: (key: string) => {
-    const cached = cache.get(key)
-    if (cached && Date.now() - cached.timestamp < cached.ttl) {
-      return cached.data
-    }
-    cache.delete(key)
-    return null
-  },
-  set: (key: string, data: any, ttl: number = CACHE_TTL.default) => {
-    cache.set(key, { data, timestamp: Date.now(), ttl })
-  },
-  clear: (pattern?: string) => {
-    if (pattern) {
-      for (const key of cache.keys()) {
-        if (key.includes(pattern)) {
-          cache.delete(key)
-        }
-      }
-    } else {
-      cache.clear()
-    }
-  },
-}
+export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null
 
-// Enhanced fetch with retry logic
-async function fetchWithRetry<T>(operation: () => Promise<T>, maxRetries = 3, delay = 1000): Promise<T> {
-  for (let i = 0; i < maxRetries; i++) {
+// Enhanced retry logic with exponential backoff
+async function withRetry<T>(operation: () => Promise<T>, maxRetries = 3, baseDelay = 1000): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await operation()
     } catch (error) {
-      console.error(`Attempt ${i + 1} failed:`, error)
-      if (i === maxRetries - 1) throw error
-      await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, i)))
+      if (attempt === maxRetries) {
+        throw error
+      }
+
+      const delay = baseDelay * Math.pow(2, attempt - 1)
+      console.warn(`Attempt ${attempt} failed, retrying in ${delay}ms...`, error)
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
   throw new Error("Max retries exceeded")
@@ -84,40 +36,40 @@ const mockProjects = [
     id: "1",
     title: "E-commerce Platform",
     description: "A modern e-commerce solution built with Next.js and Shopify",
-    image_url: "/placeholder.svg?height=400&width=600&text=E-commerce+Platform",
+    image_url: "/ecommerce-platform-concept.png",
     technologies: ["Next.js", "Shopify", "TypeScript", "Tailwind CSS"],
-    github_url: "https://github.com",
-    live_url: "https://example.com",
+    github_url: "https://github.com/example/ecommerce",
+    live_url: "https://example-store.com",
     featured: true,
     slug: "ecommerce-platform",
-    published: true,
-    created_at: new Date().toISOString(),
+    content: "A comprehensive e-commerce platform with modern design and seamless user experience.",
+    created_at: "2024-01-15T00:00:00Z",
   },
   {
     id: "2",
     title: "Portfolio Website",
-    description: "A responsive portfolio website with modern design",
-    image_url: "/placeholder.svg?height=400&width=600&text=Portfolio+Website",
-    technologies: ["React", "Next.js", "Framer Motion", "Tailwind CSS"],
-    github_url: "https://github.com",
-    live_url: "https://example.com",
+    description: "A responsive portfolio website showcasing creative work",
+    image_url: "/portfolio-website-showcase.png",
+    technologies: ["React", "Framer Motion", "CSS3"],
+    github_url: "https://github.com/example/portfolio",
+    live_url: "https://example-portfolio.com",
     featured: true,
     slug: "portfolio-website",
-    published: true,
-    created_at: new Date().toISOString(),
+    content: "A stunning portfolio website with smooth animations and responsive design.",
+    created_at: "2024-01-10T00:00:00Z",
   },
   {
     id: "3",
-    title: "Mobile App",
-    description: "Cross-platform mobile application with React Native",
-    image_url: "/placeholder.svg?height=400&width=600&text=Mobile+App",
-    technologies: ["React Native", "TypeScript", "Firebase", "Expo"],
-    github_url: "https://github.com",
-    live_url: "https://example.com",
+    title: "Task Management App",
+    description: "A collaborative task management application",
+    image_url: "/task-management-app-interface.png",
+    technologies: ["Vue.js", "Node.js", "MongoDB"],
+    github_url: "https://github.com/example/taskapp",
+    live_url: "https://example-tasks.com",
     featured: false,
-    slug: "mobile-app",
-    published: true,
-    created_at: new Date().toISOString(),
+    slug: "task-management-app",
+    content: "A powerful task management application for teams and individuals.",
+    created_at: "2024-01-05T00:00:00Z",
   },
 ]
 
@@ -126,21 +78,24 @@ const mockBlogPosts = [
     id: "1",
     title: "Getting Started with Next.js 14",
     excerpt: "Learn the latest features and improvements in Next.js 14",
-    content: "Full blog post content here...",
-    image_url: "/placeholder.svg?height=400&width=600&text=Next.js+14",
+    content:
+      "Next.js 14 brings exciting new features including improved performance, better developer experience, and enhanced SEO capabilities.",
+    image_url: "/nextjs-tutorial.jpg",
     published: true,
     slug: "getting-started-nextjs-14",
-    created_at: new Date().toISOString(),
+    created_at: "2024-01-20T00:00:00Z",
+    tags: ["Next.js", "React", "Web Development"],
   },
   {
     id: "2",
-    title: "Building Modern Web Applications",
-    excerpt: "Best practices for building scalable web applications",
-    content: "Full blog post content here...",
-    image_url: "/placeholder.svg?height=400&width=600&text=Modern+Web+Apps",
+    title: "Building Responsive Layouts with Tailwind CSS",
+    excerpt: "Master responsive design with Tailwind CSS utilities",
+    content: "Tailwind CSS provides powerful utilities for creating responsive layouts that work across all devices.",
+    image_url: "/tailwind-css-responsive.jpg",
     published: true,
-    slug: "building-modern-web-applications",
-    created_at: new Date().toISOString(),
+    slug: "responsive-layouts-tailwind",
+    created_at: "2024-01-18T00:00:00Z",
+    tags: ["Tailwind CSS", "CSS", "Responsive Design"],
   },
 ]
 
@@ -148,167 +103,148 @@ const mockSnippets = [
   {
     id: "1",
     title: "React Custom Hook for API Calls",
-    description: "A reusable custom hook for handling API calls with loading states and error handling.",
-    code: `import { useState, useEffect } from 'react';
+    description: "A reusable custom hook for handling API requests with loading and error states",
+    code: `import { useState, useEffect } from 'react'
 
 export function useApi<T>(url: string) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<T | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch');
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetch(url)
+      .then(res => res.json())
+      .then(setData)
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [url])
 
-    fetchData();
-  }, [url]);
-
-  return { data, loading, error };
+  return { data, loading, error }
 }`,
-    content: "A comprehensive custom hook for API calls with TypeScript support, loading states, and error handling.",
     language: "typescript",
-    category: "React",
-    tags: ["React", "TypeScript", "Hooks", "API"],
+    tags: ["React", "TypeScript", "Hooks"],
     featured: true,
-    slug: "react-custom-hook-api-calls",
-    published: true,
-    created_at: new Date().toISOString(),
+    slug: "react-api-hook",
+    created_at: "2024-01-15T00:00:00Z",
   },
   {
     id: "2",
-    title: "Next.js API Route with Error Handling",
-    description: "A robust API route pattern with comprehensive error handling and validation.",
-    code: `import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+    title: "CSS Grid Auto-Fit Layout",
+    description: "Responsive grid layout that automatically adjusts to screen size",
+    code: `.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
 
-const schema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-});
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const validatedData = schema.parse(body);
-    
-    // Process the data
-    const result = await processData(validatedData);
-    
-    return NextResponse.json({ success: true, data: result });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+.grid-item {
+  background: #f0f0f0;
+  padding: 1rem;
+  border-radius: 8px;
 }`,
-    content:
-      "A robust API route pattern with Zod validation and comprehensive error handling for Next.js applications.",
-    language: "typescript",
-    category: "Next.js",
-    tags: ["Next.js", "API", "Validation", "Error Handling"],
+    language: "css",
+    tags: ["CSS", "Grid", "Responsive"],
     featured: true,
-    slug: "nextjs-api-route-error-handling",
-    published: true,
-    created_at: new Date().toISOString(),
+    slug: "css-grid-auto-fit",
+    created_at: "2024-01-12T00:00:00Z",
   },
 ]
 
-const mockServices = [
+const mockServiceAreas = [
   {
     id: "1",
-    title: "Web Development",
-    description: "Custom web applications built with modern technologies",
-    icon: "Code",
-    features: ["Responsive Design", "Performance Optimization", "SEO Friendly"],
-    price_range: "$2000 - $10000",
-    show_on_home: true,
-    created_at: new Date().toISOString(),
+    name: "Dubai",
+    slug: "dubai",
+    description: "Professional Shopify development services in Dubai, UAE",
+    content: "Comprehensive Shopify solutions for businesses in Dubai",
+    meta_title: "Shopify Expert Dubai | E-commerce Development Services",
+    meta_description:
+      "Leading Shopify expert in Dubai offering custom e-commerce solutions, theme development, and store optimization services.",
+    created_at: "2024-01-01T00:00:00Z",
   },
   {
     id: "2",
-    title: "E-commerce Solutions",
-    description: "Complete e-commerce platforms with Shopify and custom solutions",
-    icon: "ShoppingCart",
-    features: ["Payment Integration", "Inventory Management", "Analytics"],
-    price_range: "$3000 - $15000",
-    show_on_home: true,
-    created_at: new Date().toISOString(),
+    name: "Abu Dhabi",
+    slug: "abu-dhabi",
+    description: "Expert Shopify development services in Abu Dhabi, UAE",
+    content: "Professional Shopify development for Abu Dhabi businesses",
+    meta_title: "Shopify Developer Abu Dhabi | E-commerce Solutions",
+    meta_description:
+      "Professional Shopify developer in Abu Dhabi providing custom e-commerce solutions and store development services.",
+    created_at: "2024-01-01T00:00:00Z",
   },
 ]
 
 // Projects functions
 export async function fetchProjects() {
-  const cacheKey = "projects"
-  const cached = cacheUtils.get(cacheKey)
-  if (cached) return cached
-
   if (!supabase) {
-    console.warn("Supabase not configured, using mock data")
-    cacheUtils.set(cacheKey, mockProjects, CACHE_TTL.projects)
+    console.warn("Using mock projects data")
     return mockProjects
   }
 
   try {
-    const data = await fetchWithRetry(async () => {
+    return await withRetry(async () => {
       const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
 
       if (error) throw error
-      return data || []
+      return data || mockProjects
     })
-
-    cacheUtils.set(cacheKey, data, CACHE_TTL.projects)
-    return data
   } catch (error) {
     console.error("Error fetching projects:", error)
-    console.log("Using mock data as fallback")
-    cacheUtils.set(cacheKey, mockProjects, CACHE_TTL.projects)
     return mockProjects
   }
 }
 
 export async function fetchFeaturedProjects() {
-  const projects = await fetchProjects()
-  return projects.filter((project: any) => project.featured).slice(0, 3)
+  if (!supabase) {
+    return mockProjects.filter((p) => p.featured)
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("featured", true)
+        .order("created_at", { ascending: false })
+        .limit(6)
+
+      if (error) throw error
+      return data || mockProjects.filter((p) => p.featured)
+    })
+  } catch (error) {
+    console.error("Error fetching featured projects:", error)
+    return mockProjects.filter((p) => p.featured)
+  }
 }
 
 export async function fetchProjectBySlug(slug: string) {
-  const projects = await fetchProjects()
-  return projects.find((project: any) => project.slug === slug)
+  if (!supabase) {
+    return mockProjects.find((p) => p.slug === slug) || null
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase.from("projects").select("*").eq("slug", slug).single()
+
+      if (error) throw error
+      return data || mockProjects.find((p) => p.slug === slug) || null
+    })
+  } catch (error) {
+    console.error("Error fetching project:", error)
+    return mockProjects.find((p) => p.slug === slug) || null
+  }
 }
 
 // Blog functions
 export async function fetchBlogPosts() {
-  const cacheKey = "blog-posts"
-  const cached = cacheUtils.get(cacheKey)
-  if (cached) return cached
-
   if (!supabase) {
-    console.warn("Supabase not configured, using mock data")
-    cacheUtils.set(cacheKey, mockBlogPosts, CACHE_TTL.blog)
     return mockBlogPosts
   }
 
   try {
-    const data = await fetchWithRetry(async () => {
+    return await withRetry(async () => {
       const { data, error } = await supabase
         .from("blog_posts")
         .select("*")
@@ -316,198 +252,155 @@ export async function fetchBlogPosts() {
         .order("created_at", { ascending: false })
 
       if (error) throw error
-      return data || []
+      return data || mockBlogPosts
     })
-
-    cacheUtils.set(cacheKey, data, CACHE_TTL.blog)
-    return data
   } catch (error) {
     console.error("Error fetching blog posts:", error)
-    console.log("Using mock data as fallback")
-    cacheUtils.set(cacheKey, mockBlogPosts, CACHE_TTL.blog)
     return mockBlogPosts
   }
 }
 
+export async function fetchFeaturedBlogPosts() {
+  if (!supabase) {
+    return mockBlogPosts.slice(0, 3)
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(3)
+
+      if (error) throw error
+      return data || mockBlogPosts.slice(0, 3)
+    })
+  } catch (error) {
+    console.error("Error fetching featured blog posts:", error)
+    return mockBlogPosts.slice(0, 3)
+  }
+}
+
 export async function fetchBlogPostBySlug(slug: string) {
-  const posts = await fetchBlogPosts()
-  return posts.find((post: any) => post.slug === slug)
+  if (!supabase) {
+    return mockBlogPosts.find((p) => p.slug === slug) || null
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("slug", slug)
+        .eq("published", true)
+        .single()
+
+      if (error) throw error
+      return data || mockBlogPosts.find((p) => p.slug === slug) || null
+    })
+  } catch (error) {
+    console.error("Error fetching blog post:", error)
+    return mockBlogPosts.find((p) => p.slug === slug) || null
+  }
 }
 
 // Snippets functions
 export async function fetchSnippets() {
-  const cacheKey = "snippets"
-  const cached = cacheUtils.get(cacheKey)
-  if (cached) return cached
-
   if (!supabase) {
-    console.warn("Supabase not configured, using mock data")
-    cacheUtils.set(cacheKey, mockSnippets, CACHE_TTL.snippets)
     return mockSnippets
   }
 
   try {
-    const data = await fetchWithRetry(async () => {
-      const { data, error } = await supabase
-        .from("snippets")
-        .select("*")
-        .eq("published", true)
-        .order("created_at", { ascending: false })
+    return await withRetry(async () => {
+      const { data, error } = await supabase.from("code_snippets").select("*").order("created_at", { ascending: false })
 
       if (error) throw error
-      return data || []
+      return data || mockSnippets
     })
-
-    cacheUtils.set(cacheKey, data, CACHE_TTL.snippets)
-    return data
   } catch (error) {
     console.error("Error fetching snippets:", error)
-    console.log("Using mock data as fallback")
-    cacheUtils.set(cacheKey, mockSnippets, CACHE_TTL.snippets)
     return mockSnippets
+  }
+}
+
+export async function fetchFeaturedSnippets() {
+  if (!supabase) {
+    return mockSnippets.filter((s) => s.featured)
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase
+        .from("code_snippets")
+        .select("*")
+        .eq("featured", true)
+        .order("created_at", { ascending: false })
+        .limit(4)
+
+      if (error) throw error
+      return data || mockSnippets.filter((s) => s.featured)
+    })
+  } catch (error) {
+    console.error("Error fetching featured snippets:", error)
+    return mockSnippets.filter((s) => s.featured)
   }
 }
 
 export async function fetchSnippetBySlug(slug: string) {
-  const snippets = await fetchSnippets()
-  return snippets.find((snippet: any) => snippet.slug === slug)
-}
-
-export async function fetchFeaturedSnippets() {
-  const snippets = await fetchSnippets()
-  return snippets.filter((snippet: any) => snippet.featured).slice(0, 3)
-}
-
-// Services functions
-export async function fetchServices() {
-  const cacheKey = "services"
-  const cached = cacheUtils.get(cacheKey)
-  if (cached) return cached
-
   if (!supabase) {
-    console.warn("Supabase not configured, using mock data")
-    cacheUtils.set(cacheKey, mockServices, CACHE_TTL.services)
-    return mockServices
+    return mockSnippets.find((s) => s.slug === slug) || null
   }
 
   try {
-    const data = await fetchWithRetry(async () => {
-      const { data, error } = await supabase.from("services").select("*").order("created_at", { ascending: false })
+    return await withRetry(async () => {
+      const { data, error } = await supabase.from("code_snippets").select("*").eq("slug", slug).single()
 
       if (error) throw error
-      return data || []
+      return data || mockSnippets.find((s) => s.slug === slug) || null
     })
-
-    cacheUtils.set(cacheKey, data, CACHE_TTL.services)
-    return data
   } catch (error) {
-    console.error("Error fetching services:", error)
-    console.log("Using mock data as fallback")
-    cacheUtils.set(cacheKey, mockServices, CACHE_TTL.services)
-    return mockServices
+    console.error("Error fetching snippet:", error)
+    return mockSnippets.find((s) => s.slug === slug) || null
   }
-}
-
-export async function fetchHomeServices() {
-  const services = await fetchServices()
-  return services.filter((service: any) => service.show_on_home)
 }
 
 // Service Areas functions
 export async function fetchServiceAreas() {
-  const cacheKey = "service-areas"
-  const cached = cacheUtils.get(cacheKey)
-  if (cached) return cached
-
   if (!supabase) {
-    console.warn("Supabase not configured, using mock data")
-    const mockServiceAreas = [
-      {
-        id: "1",
-        slug: "dubai",
-        title: "Shopify Expert in Dubai",
-        meta_title: "Shopify Expert in Dubai | Professional Shopify Development",
-        meta_description:
-          "Looking for a Shopify Expert in Dubai? I help businesses in Dubai design, develop, and grow their Shopify stores.",
-        intro_text:
-          "I am a certified Shopify expert helping Dubai businesses build powerful online stores tailored to the UAE market.",
-        hero_image: "/placeholder.svg?height=600&width=1200&text=Dubai+Shopify+Expert",
-        faq: [
-          {
-            question: "How much does a Shopify expert in Dubai cost?",
-            answer: "Pricing depends on project scope, starting from $500 for setup services.",
-          },
-          {
-            question: "Can you integrate UAE payment gateways?",
-            answer: "Yes, I support PayTabs, Telr, Stripe, and other UAE-compliant gateways.",
-          },
-        ],
-        local_expertise: [
-          "Knowledge of UAE payment gateways",
-          "Familiar with shipping providers (Aramex, Fetchr, DHL)",
-          "Work in Dubai time zone",
-          "Understanding of UAE e-commerce regulations",
-        ],
-        active: true,
-        created_at: new Date().toISOString(),
-      },
-      {
-        id: "2",
-        slug: "abu-dhabi",
-        title: "Shopify Expert in Abu Dhabi",
-        meta_title: "Shopify Expert in Abu Dhabi | Professional Shopify Development",
-        meta_description:
-          "Looking for a Shopify Expert in Abu Dhabi? I help businesses in Abu Dhabi design, develop, and grow their Shopify stores.",
-        intro_text:
-          "I am a certified Shopify expert helping Abu Dhabi businesses build powerful online stores tailored to the UAE market.",
-        hero_image: "/placeholder.svg?height=600&width=1200&text=Abu+Dhabi+Shopify+Expert",
-        faq: [
-          {
-            question: "How much does a Shopify expert in Abu Dhabi cost?",
-            answer: "Pricing depends on project scope, starting from $500 for setup services.",
-          },
-          {
-            question: "Do you work with Abu Dhabi government entities?",
-            answer: "Yes, I have experience working with government and enterprise clients in Abu Dhabi.",
-          },
-        ],
-        local_expertise: [
-          "Knowledge of UAE payment gateways",
-          "Experience with Abu Dhabi government requirements",
-          "Work in Abu Dhabi time zone",
-          "Understanding of UAE e-commerce regulations",
-        ],
-        active: true,
-        created_at: new Date().toISOString(),
-      },
-    ]
-    cacheUtils.set(cacheKey, mockServiceAreas, CACHE_TTL.services)
     return mockServiceAreas
   }
 
   try {
-    const data = await fetchWithRetry(async () => {
-      const { data, error } = await supabase
-        .from("service_areas")
-        .select("*")
-        .eq("active", true)
-        .order("created_at", { ascending: false })
+    return await withRetry(async () => {
+      const { data, error } = await supabase.from("service_areas").select("*").order("created_at", { ascending: false })
 
       if (error) throw error
-      return data || []
+      return data || mockServiceAreas
     })
-
-    cacheUtils.set(cacheKey, data, CACHE_TTL.services)
-    return data
   } catch (error) {
     console.error("Error fetching service areas:", error)
-    return []
+    return mockServiceAreas
   }
 }
 
 export async function fetchServiceAreaBySlug(slug: string) {
-  const serviceAreas = await fetchServiceAreas()
-  return serviceAreas.find((area: any) => area.slug === slug)
+  if (!supabase) {
+    return mockServiceAreas.find((s) => s.slug === slug) || null
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase.from("service_areas").select("*").eq("slug", slug).single()
+
+      if (error) throw error
+      return data || mockServiceAreas.find((s) => s.slug === slug) || null
+    })
+  } catch (error) {
+    console.error("Error fetching service area:", error)
+    return mockServiceAreas.find((s) => s.slug === slug) || null
+  }
 }
 
 // Contact form submission
@@ -515,37 +408,27 @@ export async function submitContactForm(formData: {
   name: string
   email: string
   message: string
-  subject?: string
 }) {
   if (!supabase) {
-    console.warn("Supabase not configured, simulating form submission")
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    console.warn("Contact form submitted (mock mode):", formData)
     return { success: true, message: "Message sent successfully!" }
   }
 
   try {
-    const { error } = await supabase.from("contact_messages").insert([
-      {
-        name: formData.name,
-        email: formData.email,
-        message: formData.message,
-        subject: formData.subject || "Contact Form Submission",
-        created_at: new Date().toISOString(),
-      },
-    ])
+    return await withRetry(async () => {
+      const { error } = await supabase.from("contact_messages").insert([formData])
 
-    if (error) throw error
-
-    return { success: true, message: "Message sent successfully!" }
+      if (error) throw error
+      return { success: true, message: "Message sent successfully!" }
+    })
   } catch (error) {
     console.error("Error submitting contact form:", error)
     return { success: false, message: "Failed to send message. Please try again." }
   }
 }
 
-// Quote form submission
-export async function submitQuoteForm(formData: {
+// Quote request submission
+export async function submitQuoteRequest(formData: {
   name: string
   email: string
   company?: string
@@ -555,42 +438,67 @@ export async function submitQuoteForm(formData: {
   description: string
 }) {
   if (!supabase) {
-    console.warn("Supabase not configured, simulating quote submission")
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    console.warn("Quote request submitted (mock mode):", formData)
     return { success: true, message: "Quote request sent successfully!" }
   }
 
   try {
-    const { error } = await supabase.from("quote_requests").insert([
-      {
-        ...formData,
-        created_at: new Date().toISOString(),
-      },
-    ])
+    return await withRetry(async () => {
+      const { error } = await supabase.from("quote_requests").insert([formData])
 
-    if (error) throw error
-
-    return { success: true, message: "Quote request sent successfully!" }
+      if (error) throw error
+      return { success: true, message: "Quote request sent successfully!" }
+    })
   } catch (error) {
-    console.error("Error submitting quote form:", error)
+    console.error("Error submitting quote request:", error)
     return { success: false, message: "Failed to send quote request. Please try again." }
   }
 }
 
-// Health check
-export async function checkSupabaseConnection() {
+// Site settings
+export async function fetchSiteSettings() {
   if (!supabase) {
-    return { connected: false, message: "Supabase not configured" }
+    return {
+      site_title: "Hamza Tahir - Full Stack Developer",
+      site_description: "Professional web development services",
+      contact_email: "hello@hamzatahir.com",
+      social_links: {
+        github: "https://github.com/hamzatahir",
+        linkedin: "https://linkedin.com/in/hamzatahir",
+        twitter: "https://twitter.com/hamzatahir",
+      },
+    }
   }
 
   try {
-    const { data, error } = await supabase.from("projects").select("count").limit(1)
+    return await withRetry(async () => {
+      const { data, error } = await supabase.from("site_settings").select("*").single()
 
-    if (error) throw error
-
-    return { connected: true, message: "Connected successfully" }
+      if (error) throw error
+      return (
+        data || {
+          site_title: "Hamza Tahir - Full Stack Developer",
+          site_description: "Professional web development services",
+          contact_email: "hello@hamzatahir.com",
+          social_links: {
+            github: "https://github.com/hamzatahir",
+            linkedin: "https://linkedin.com/in/hamzatahir",
+            twitter: "https://twitter.com/hamzatahir",
+          },
+        }
+      )
+    })
   } catch (error) {
-    console.error("Supabase connection error:", error)
-    return { connected: false, message: "Connection failed" }
+    console.error("Error fetching site settings:", error)
+    return {
+      site_title: "Hamza Tahir - Full Stack Developer",
+      site_description: "Professional web development services",
+      contact_email: "hello@hamzatahir.com",
+      social_links: {
+        github: "https://github.com/hamzatahir",
+        linkedin: "https://linkedin.com/in/hamzatahir",
+        twitter: "https://twitter.com/hamzatahir",
+      },
+    }
   }
 }
