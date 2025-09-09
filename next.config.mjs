@@ -3,6 +3,7 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['@/components', '@/lib', 'lucide-react', 'framer-motion'],
+    optimizeCss: true,
     turbo: {
       rules: {
         '*.svg': {
@@ -27,14 +28,17 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    unoptimized: true, // Added update
+    unoptimized: false,
   },
 
   // Compression and minification
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-
+  
+  // Output optimization
+  output: 'standalone',
+  
   // Bundle optimization
   webpack: (config, { dev, isServer }) => {
     // Production optimizations
@@ -45,17 +49,27 @@ const nextConfig = {
         sideEffects: false,
         splitChunks: {
           chunks: 'all',
+          minSize: 20000,
+          maxSize: 244000,
           cacheGroups: {
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
               chunks: 'all',
+              priority: 10,
             },
             common: {
               name: 'common',
               minChunks: 2,
               chunks: 'all',
               enforce: true,
+              priority: 5,
+            },
+            framerMotion: {
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              name: 'framer-motion',
+              chunks: 'all',
+              priority: 20,
             },
           },
         },
@@ -71,7 +85,7 @@ const nextConfig = {
     return config
   },
 
-  // Headers for performance
+  // Headers for performance and security
   async headers() {
     return [
       {
@@ -96,6 +110,10 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
           }
         ]
       },
@@ -110,6 +128,24 @@ const nextConfig = {
       },
       {
         source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      {
+        source: '/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2))',
         headers: [
           {
             key: 'Cache-Control',

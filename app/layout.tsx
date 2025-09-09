@@ -15,6 +15,7 @@ const inter = Inter({
   display: "swap",
   preload: true,
   variable: "--font-inter",
+  fallback: ["system-ui", "arial"],
 })
 
 export const metadata: Metadata = {
@@ -100,6 +101,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+        <link rel="preload" href="/hero-bg.jpg" as="image" />
         <meta name="theme-color" content="#8b5cf6" />
         <meta name="msapplication-TileColor" content="#8b5cf6" />
         <link rel="manifest" href="/manifest.json" />
@@ -109,7 +111,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <PageProgress />
             <ScrollProgress />
             {children}

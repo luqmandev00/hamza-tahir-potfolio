@@ -2,77 +2,87 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ThemeProvider } from "next-themes"
-import Header from "@/components/header"
 import Hero from "@/components/hero"
 import About from "@/components/about"
 import Services from "@/components/services"
 import Projects from "@/components/projects"
 import Blog from "@/components/blog"
 import Contact from "@/components/contact"
-import Footer from "@/components/footer"
-import ScrollProgress from "@/components/scroll-progress"
+import PageLoader from "@/components/page-loader"
+import LazySection from "@/components/lazy-section"
+import { Suspense } from "react"
 
-export default function Home() {
+export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true)
+  const [showContent, setShowContent] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
+    // Preload critical resources
+    const preloadResources = async () => {
+      const criticalImages = [
+        "/placeholder.svg?height=600&width=800&text=Hero+Image",
+        "/placeholder.svg?height=400&width=400&text=Profile+Photo",
+      ]
 
-    return () => clearTimeout(timer)
+      const imagePromises = criticalImages.map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image()
+          img.onload = resolve
+          img.onerror = reject
+          img.src = src
+        })
+      })
+
+      try {
+        await Promise.allSettled(imagePromises)
+      } catch (error) {
+        console.log("Some images failed to preload, continuing anyway")
+      }
+    }
+
+    preloadResources()
   }, [])
 
+  const handleLoadingComplete = () => {
+    setIsLoading(false)
+    setTimeout(() => setShowContent(true), 100)
+  }
+
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <AnimatePresence mode="wait">
-        {isLoading ? (
-          <motion.div
-            key="loader"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background"
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              className="text-4xl font-bold text-primary"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-              }}
-            >
-              HT
-            </motion.div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="min-h-screen bg-background text-foreground"
-          >
-            <ScrollProgress />
-            <Header />
-            <main>
-              <Hero />
-              <About />
-              <Services />
-              <Projects />
-              <Blog />
-              {/* CodeSnippets section is hidden but not removed */}
-              {/* <CodeSnippets /> */}
-              <Contact />
-            </main>
-            <Footer />
+    <div className="min-h-screen">
+      <AnimatePresence>{isLoading && <PageLoader onComplete={handleLoadingComplete} />}</AnimatePresence>
+
+      <AnimatePresence>
+        {showContent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+            <Suspense fallback={<PageLoader isLoading={true} />}>
+              <LazySection animation="none">
+                <Hero />
+              </LazySection>
+
+              <LazySection animation="fade" delay={0.1}>
+                <About />
+              </LazySection>
+
+              <LazySection animation="slide-up" delay={0.2}>
+                <Services />
+              </LazySection>
+
+              <LazySection animation="fade" delay={0.3}>
+                <Projects />
+              </LazySection>
+
+              <LazySection animation="slide-up" delay={0.4}>
+                <Blog />
+              </LazySection>
+
+              <LazySection animation="slide-up" delay={0.5}>
+                <Contact />
+              </LazySection>
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>
-    </ThemeProvider>
+    </div>
   )
 }

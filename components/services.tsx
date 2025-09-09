@@ -1,328 +1,173 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Code, ShoppingCart, Smartphone, Palette, Search, Zap, ArrowRight, CheckCircle } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Check, ArrowRight, Sparkles, Star, Users, Clock, Award, TrendingUp } from "lucide-react"
-import { supabase } from "@/lib/supabase"
+import { Badge } from "@/components/ui/badge"
+import LazySection from "./lazy-section"
+import { fetchHomeServices } from "@/lib/supabase"
 
 interface Service {
   id: string
-  name: string
+  title: string
   description: string
   icon: string
   features: string[]
-  price_range?: string
-  order_index: number
-  published: boolean
-  created_at: string
-  updated_at: string
+  price_range: string
+  show_on_home: boolean
 }
 
-const Services = () => {
+const iconMap = {
+  Code,
+  ShoppingCart,
+  Smartphone,
+  Palette,
+  Search,
+  Zap,
+}
+
+export default function Services() {
   const [services, setServices] = useState<Service[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetchServices()
-  }, [])
-
-  const fetchServices = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("services")
-        .select("*")
-        .eq("published", true)
-        .order("order_index", { ascending: true })
-
-      if (error) throw error
-      setServices(data || [])
-    } catch (error) {
-      console.error("Error fetching services:", error)
-      // Fallback to default services if database fails
-      setServices([
-        {
-          id: "web-development",
-          name: "Web Development",
-          description: "Custom websites and web applications built with modern technologies",
-          icon: "🌐",
-          features: ["Responsive Design", "SEO Optimized", "Fast Performance", "Modern UI/UX", "CMS Integration"],
-          price_range: "Starting at $2,500",
-          order_index: 1,
-          published: true,
-          created_at: "",
-          updated_at: "",
-        },
-        {
-          id: "mobile-development",
-          name: "Mobile Development",
-          description: "Native and cross-platform mobile apps for iOS and Android",
-          icon: "📱",
-          features: [
-            "Cross-Platform",
-            "Native Performance",
-            "App Store Ready",
-            "Push Notifications",
-            "Offline Support",
-          ],
-          price_range: "Starting at $5,000",
-          order_index: 2,
-          published: true,
-          created_at: "",
-          updated_at: "",
-        },
-        {
-          id: "ui-ux-design",
-          name: "UI/UX Design",
-          description: "Beautiful and intuitive user interfaces that convert visitors",
-          icon: "🎨",
-          features: ["User Research", "Wireframing", "Prototyping", "Design System", "Usability Testing"],
-          price_range: "Starting at $1,500",
-          order_index: 3,
-          published: true,
-          created_at: "",
-          updated_at: "",
-        },
-      ])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const scrollToContact = (serviceType?: string) => {
-    const contactSection = document.getElementById("contact")
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: "smooth" })
-      // Pre-select the service type in the contact form if available
-      if (serviceType) {
-        setTimeout(() => {
-          const serviceSelect = document.querySelector('select[name="service"]') as HTMLSelectElement
-          if (serviceSelect) {
-            serviceSelect.value = serviceType
-            serviceSelect.dispatchEvent(new Event("change", { bubbles: true }))
-          }
-        }, 500)
+    const loadServices = async () => {
+      try {
+        const data = await fetchHomeServices()
+        setServices(data)
+      } catch (error) {
+        console.error("Error loading services:", error)
+      } finally {
+        setIsLoading(false)
       }
     }
-  }
 
-  const stats = [
-    { icon: Users, value: "50+", label: "Happy Clients" },
-    { icon: Award, value: "100+", label: "Projects Completed" },
-    { icon: Clock, value: "5+", label: "Years Experience" },
-    { icon: TrendingUp, value: "98%", label: "Client Satisfaction" },
-  ]
+    loadServices()
+  }, [])
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4 },
-    },
-  }
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <section id="services" className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-        <div className="container mx-auto px-4 flex items-center justify-center">
-          <motion.div
-            className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-          />
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4 animate-pulse" />
+            <div className="h-4 bg-muted rounded w-96 mx-auto animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-6">
+                <div className="h-12 w-12 bg-muted rounded-lg animate-pulse mb-4" />
+                <div className="h-6 bg-muted rounded animate-pulse mb-2" />
+                <div className="h-4 bg-muted rounded animate-pulse mb-4" />
+                <div className="space-y-2 mb-4">
+                  {[1, 2, 3].map((j) => (
+                    <div key={j} className="h-4 bg-muted rounded animate-pulse" />
+                  ))}
+                </div>
+                <div className="h-6 bg-muted rounded w-24 animate-pulse mb-4" />
+                <div className="h-9 bg-muted rounded animate-pulse" />
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
     )
   }
 
   return (
-    <section id="services" className="py-20 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse delay-1000" />
-
-      <div className="container mx-auto px-4 relative z-10">
+    <LazySection animation="fade" className="py-20">
+      <div className="container mx-auto px-4">
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={containerVariants}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="text-center mb-16">
-            <motion.div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm font-medium">What I Offer</span>
-            </motion.div>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Premium Services
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Transform your digital presence with cutting-edge web solutions designed to drive growth and engagement
-            </p>
-          </motion.div>
+          <h2 className="text-4xl font-bold mb-4">Services I Offer</h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            I provide comprehensive web development services to help bring your ideas to life with modern technologies
+            and best practices.
+          </p>
+        </motion.div>
 
-          {/* Stats Section */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {stats.map((stat, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {services.map((service, index) => {
+            const IconComponent = iconMap[service.icon as keyof typeof iconMap] || Code
+
+            return (
               <motion.div
-                key={stat.label}
-                className="text-center p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/20 transition-all duration-300"
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
+                key={service.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <stat.icon className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Services Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {services.map((service, index) => {
-              const isPopular = index === 1 // Make middle service popular
-
-              return (
-                <motion.div
-                  key={service.id}
-                  variants={itemVariants}
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="group relative"
-                >
-                  {isPopular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                      <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold px-4 py-1 shadow-lg">
-                        <Star className="w-3 h-3 mr-1 fill-current" />
-                        Most Popular
+                <Card className="h-full hover:shadow-lg transition-all duration-300 group border-0 bg-gradient-to-br from-background to-muted/50">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                        <IconComponent className="h-6 w-6 text-primary" />
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {service.price_range}
                       </Badge>
                     </div>
-                  )}
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {service.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm leading-relaxed">{service.description}</CardDescription>
+                  </CardHeader>
 
-                  <Card
-                    className={`h-full transition-all duration-300 hover:shadow-2xl border-2 group-hover:border-primary/30 relative overflow-hidden ${
-                      isPopular ? "border-primary/20 shadow-lg" : "hover:border-primary/20"
-                    }`}
-                  >
-                    {/* Card Background Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                    <CardHeader className="text-center pb-4 relative z-10">
-                      {/* Icon */}
-                      <motion.div
-                        className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-                        whileHover={{ rotate: 5 }}
-                      >
-                        <span className="text-3xl">{service.icon}</span>
-                      </motion.div>
-
-                      <CardTitle className="text-2xl mb-3 group-hover:text-primary transition-colors">
-                        {service.title}
-                      </CardTitle>
-                      <p className="text-muted-foreground leading-relaxed">{service.description}</p>
-
-                      {service.price_range && (
-                        <motion.div whileHover={{ scale: 1.05 }} className="mt-4">
-                          <Badge variant="outline" className="text-lg px-4 py-2 font-semibold">
-                            {service.price_range}
-                          </Badge>
+                  <CardContent className="pt-0">
+                    <div className="space-y-3 mb-6">
+                      {service.features.map((feature, featureIndex) => (
+                        <motion.div
+                          key={featureIndex}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 + featureIndex * 0.05 }}
+                          className="flex items-center gap-3 text-sm"
+                        >
+                          <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          <span>{feature}</span>
                         </motion.div>
-                      )}
-                    </CardHeader>
+                      ))}
+                    </div>
 
-                    <CardContent className="pt-0 relative z-10">
-                      {/* Features List */}
-                      <ul className="space-y-3 mb-8">
-                        {service.features.map((feature, featureIndex) => (
-                          <motion.li
-                            key={featureIndex}
-                            className="flex items-start gap-3"
-                            initial={{ opacity: 0, x: -10 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            transition={{ delay: featureIndex * 0.1 }}
-                          >
-                            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <Check className="w-3 h-3 text-primary" />
-                            </div>
-                            <span className="text-sm leading-relaxed">{feature}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
+                    <Button
+                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 bg-transparent"
+                      variant="outline"
+                    >
+                      Get Started
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
+        </div>
 
-                      {/* CTA Button */}
-                      <Button
-                        onClick={() => scrollToContact(service.id)}
-                        className={`w-full group/btn transition-all duration-300 ${
-                          isPopular
-                            ? "bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white shadow-lg"
-                            : "hover:bg-primary hover:text-primary-foreground"
-                        }`}
-                        variant={isPopular ? "default" : "outline"}
-                      >
-                        <span>Get Started</span>
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )
-            })}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-center mt-16"
+        >
+          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8 max-w-2xl mx-auto">
+            <h3 className="text-2xl font-bold mb-4">Need Something Custom?</h3>
+            <p className="text-muted-foreground mb-6">
+              Don't see exactly what you're looking for? I'd love to discuss your unique project requirements and create
+              a custom solution.
+            </p>
+            <Button size="lg">
+              Let's Talk About Your Project
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
-
-          {/* Bottom CTA */}
-          <motion.div variants={itemVariants} className="text-center">
-            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8 border border-primary/20">
-              <h3 className="text-2xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Need Something Custom?
-              </h3>
-              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Every project is unique. Let's discuss your specific requirements and create a tailored solution that
-                perfectly fits your needs.
-              </p>
-              <Button
-                onClick={() => scrollToContact("custom")}
-                size="lg"
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Start Your Project
-              </Button>
-            </div>
-          </motion.div>
-
-          {services.length === 0 && (
-            <motion.div variants={itemVariants} className="text-center py-12">
-              <div className="bg-muted/50 rounded-lg p-8">
-                <p className="text-muted-foreground text-lg">No services available at the moment.</p>
-                <p className="text-sm text-muted-foreground mt-2">Please check back later or contact me directly.</p>
-              </div>
-            </motion.div>
-          )}
         </motion.div>
       </div>
-    </section>
+    </LazySection>
   )
 }
-
-export default Services
