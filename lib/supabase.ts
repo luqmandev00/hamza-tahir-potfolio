@@ -176,6 +176,69 @@ const mockServiceAreas = [
   },
 ]
 
+const mockServices = [
+  {
+    id: "1",
+    title: "Web Development",
+    description: "Custom web applications built with modern technologies",
+    icon: "Code",
+    features: ["Responsive Design", "SEO Optimized", "Fast Performance", "Mobile-First"],
+    price_range: "$2K - $10K",
+    show_on_home: true,
+    created_at: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "2",
+    title: "E-Commerce Solutions",
+    description: "Shopify stores and custom e-commerce platforms",
+    icon: "ShoppingCart",
+    features: ["Store Setup", "Payment Integration", "Inventory Management", "Analytics"],
+    price_range: "$3K - $15K",
+    show_on_home: true,
+    created_at: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "3",
+    title: "Mobile App Development",
+    description: "Native and cross-platform mobile applications",
+    icon: "Smartphone",
+    features: ["iOS & Android", "Cross-platform", "Cloud Integration", "Real-time Sync"],
+    price_range: "$5K - $25K",
+    show_on_home: true,
+    created_at: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "4",
+    title: "UI/UX Design",
+    description: "Beautiful and user-friendly interface designs",
+    icon: "Palette",
+    features: ["Wireframes", "Prototypes", "Design Systems", "User Research"],
+    price_range: "$1K - $5K",
+    show_on_home: true,
+    created_at: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "5",
+    title: "SEO & Performance",
+    description: "Optimize your site for search engines and speed",
+    icon: "Search",
+    features: ["SEO Audit", "Speed Optimization", "Schema Markup", "Monitoring"],
+    price_range: "$500 - $3K",
+    show_on_home: true,
+    created_at: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "6",
+    title: "DevOps & Deployment",
+    description: "Reliable deployment and infrastructure management",
+    icon: "Zap",
+    features: ["CI/CD Setup", "Server Management", "Monitoring", "Scaling"],
+    price_range: "$1K - $5K",
+    show_on_home: false,
+    created_at: "2024-01-01T00:00:00Z",
+  },
+]
+
 // Projects functions
 export async function fetchProjects() {
   if (!supabase) {
@@ -363,6 +426,47 @@ export async function fetchSnippetBySlug(slug: string) {
   } catch (error) {
     console.error("Error fetching snippet:", error)
     return mockSnippets.find((s) => s.slug === slug) || null
+  }
+}
+
+// Services functions
+export async function fetchHomeServices() {
+  if (!supabase) {
+    return mockServices.filter((s) => s.show_on_home)
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("show_on_home", true)
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      return data || mockServices.filter((s) => s.show_on_home)
+    })
+  } catch (error) {
+    console.error("Error fetching home services:", error)
+    return mockServices.filter((s) => s.show_on_home)
+  }
+}
+
+export async function fetchAllServices() {
+  if (!supabase) {
+    return mockServices
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase.from("services").select("*").order("created_at", { ascending: false })
+
+      if (error) throw error
+      return data || mockServices
+    })
+  } catch (error) {
+    console.error("Error fetching services:", error)
+    return mockServices
   }
 }
 
