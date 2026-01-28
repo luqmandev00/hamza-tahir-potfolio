@@ -86,6 +86,7 @@ export const metadata: Metadata = {
     canonical: "https://hamzatahir.dev",
   },
   category: "technology",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
