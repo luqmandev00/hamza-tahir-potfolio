@@ -12,6 +12,62 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null
 
+export type Project = {
+  id: string
+  title: string
+  description: string
+  image_url: string
+  technologies: string[]
+  github_url?: string
+  live_url?: string
+  featured: boolean
+  slug: string
+  content: string
+  created_at: string
+}
+
+export type BlogPost = {
+  id: string
+  title: string
+  excerpt: string
+  content: string
+  image_url: string
+  published: boolean
+  slug: string
+  created_at: string
+  tags: string[]
+}
+
+export type CodeSnippet = {
+  id: string
+  title: string
+  description: string
+  code: string
+  language: string
+  tags: string[]
+  featured: boolean
+  slug: string
+  created_at: string
+}
+
+export type Service = {
+  id: string
+  title: string
+  description: string
+  icon: string
+  features: string[]
+  price_range: string
+  show_on_home: boolean
+}
+
+export type ContactMessage = {
+  id: string
+  name: string
+  email: string
+  message: string
+  created_at: string
+}
+
 // Enhanced retry logic with exponential backoff
 async function withRetry<T>(operation: () => Promise<T>, maxRetries = 3, baseDelay = 1000): Promise<T> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -452,6 +508,59 @@ export async function submitQuoteRequest(formData: {
   } catch (error) {
     console.error("Error submitting quote request:", error)
     return { success: false, message: "Failed to send quote request. Please try again." }
+  }
+}
+
+// Home services (subset of services marked for homepage)
+const mockHomeServices = [
+  {
+    id: "1",
+    title: "Shopify Development",
+    description: "Custom Shopify stores built for performance and conversions",
+    icon: "ShoppingCart",
+    features: ["Custom theme development", "App integrations", "Store optimization", "Migration support"],
+    price_range: "From $500",
+    show_on_home: true,
+  },
+  {
+    id: "2",
+    title: "Next.js Web Apps",
+    description: "Modern, fast web applications with Next.js and React",
+    icon: "Code",
+    features: ["Server-side rendering", "API routes", "TypeScript", "Tailwind CSS"],
+    price_range: "From $800",
+    show_on_home: true,
+  },
+  {
+    id: "3",
+    title: "UI/UX Design",
+    description: "Beautiful, user-friendly interfaces that convert visitors",
+    icon: "Palette",
+    features: ["Responsive design", "Component systems", "Accessibility", "Prototyping"],
+    price_range: "From $300",
+    show_on_home: true,
+  },
+]
+
+export async function fetchHomeServices() {
+  if (!supabase) {
+    return mockHomeServices
+  }
+
+  try {
+    return await withRetry(async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("show_on_home", true)
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      return data || mockHomeServices
+    })
+  } catch (error) {
+    console.error("Error fetching home services:", error)
+    return mockHomeServices
   }
 }
 
