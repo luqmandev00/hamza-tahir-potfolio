@@ -52,37 +52,15 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
     notFound()
   }
 
-  // Generate structured data for SEO
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    name: snippet.title,
-    description: snippet.description,
-    url: `https://hamzatahir.dev/snippets/${params.slug}`,
-    dateCreated: snippet.created_at,
-    dateModified: snippet.updated_at,
-    author: {
-      "@type": "Person",
-      name: "Hamza Tahir",
-      url: "https://hamzatahir.dev",
-    },
-    programmingLanguage: snippet.language,
-    keywords: snippet.tags.join(", "),
-    codeRepository: "https://hamzatahir.dev/snippets",
-  }
-
-  return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      <SnippetDetail snippet={snippet} />
-    </>
-  )
+  return <SnippetDetail snippet={snippet} />
 }
 
 export async function generateStaticParams() {
   try {
-    const { createServerClient } = await import("@/lib/supabase")
-    const supabase = createServerClient()
+    const supabase = (await import("@supabase/supabase-js")).createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    )
 
     const { data: snippets } = await supabase.from("snippets").select("slug").eq("published", true)
 
