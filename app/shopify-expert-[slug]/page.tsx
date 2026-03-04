@@ -38,3 +38,23 @@ export async function generateMetadata({ params }: ServiceAreaPageProps): Promis
 export default async function ServiceAreaPage({ params }: ServiceAreaPageProps) {
   return <ServiceAreaPageClient params={params} />
 }
+
+export async function generateStaticParams() {
+  try {
+    const supabase = (await import("@supabase/supabase-js")).createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    )
+
+    const { data: serviceAreas } = await supabase.from("service_areas").select("slug")
+
+    return (
+      serviceAreas?.map((area) => ({
+        slug: area.slug,
+      })) || []
+    )
+  } catch (error) {
+    console.error("Error generating service area static params:", error)
+    return []
+  }
+}

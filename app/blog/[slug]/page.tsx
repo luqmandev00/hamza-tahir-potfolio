@@ -63,47 +63,15 @@ export default async function BlogPage({ params }: BlogPageProps) {
     notFound()
   }
 
-  // Generate structured data for SEO
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.excerpt,
-    image: post.image_url,
-    url: `https://hamzatahir.dev/blog/${params.slug}`,
-    datePublished: post.created_at,
-    dateModified: post.updated_at,
-    author: {
-      "@type": "Person",
-      name: "Hamza Tahir",
-      url: "https://hamzatahir.dev",
-    },
-    publisher: {
-      "@type": "Person",
-      name: "Hamza Tahir",
-      url: "https://hamzatahir.dev",
-    },
-    keywords: post.tags.join(", "),
-    articleSection: post.category,
-    wordCount: post.content ? post.content.split(" ").length : 0,
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `https://hamzatahir.dev/blog/${params.slug}`,
-    },
-  }
-
-  return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      <BlogPostDetail post={post} />
-    </>
-  )
+  return <BlogPostDetail post={post} />
 }
 
 export async function generateStaticParams() {
   try {
-    const { createServerClient } = await import("@/lib/supabase")
-    const supabase = createServerClient()
+    const supabase = (await import("@supabase/supabase-js")).createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    )
 
     const { data: posts } = await supabase.from("blog_posts").select("slug").eq("published", true)
 

@@ -63,43 +63,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound()
   }
 
-  // Generate structured data for SEO
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name: project.title,
-    description: project.description,
-    image: project.image_url,
-    url: `https://hamzatahir.dev/projects/${params.slug}`,
-    author: {
-      "@type": "Person",
-      name: "Hamza Tahir",
-      url: "https://hamzatahir.dev",
-    },
-    dateCreated: project.created_at,
-    dateModified: project.updated_at,
-    keywords: project.technologies.join(", "),
-    genre: project.category,
-    workExample: project.live_url
-      ? {
-          "@type": "WebSite",
-          url: project.live_url,
-        }
-      : undefined,
-  }
-
-  return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      <ProjectDetail project={project} />
-    </>
-  )
+  return <ProjectDetail project={project} />
 }
 
 export async function generateStaticParams() {
   try {
-    const { createServerClient } = await import("@/lib/supabase")
-    const supabase = createServerClient()
+    const supabase = (await import("@supabase/supabase-js")).createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    )
 
     const { data: projects } = await supabase.from("projects").select("slug").eq("published", true)
 

@@ -3,7 +3,6 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['@/components', '@/lib', 'lucide-react', 'framer-motion'],
-    optimizeCss: true,
     turbo: {
       rules: {
         '*.svg': {
