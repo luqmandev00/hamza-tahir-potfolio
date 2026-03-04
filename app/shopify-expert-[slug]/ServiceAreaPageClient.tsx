@@ -103,26 +103,6 @@ export default async function ServiceAreaPageClient({ params }: ServiceAreaPageP
 
   return (
     <div className="min-h-screen">
-      {/* Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "LocalBusiness",
-            name: serviceArea.title,
-            description: serviceArea.meta_description,
-            address: {
-              "@type": "PostalAddress",
-              addressLocality: cityName,
-            },
-            serviceArea: cityName,
-            priceRange: "$500-$15000",
-            telephone: "+971-XX-XXX-XXXX",
-            email: "hello@hamzatahir.com",
-          }),
-        }}
-      />
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
