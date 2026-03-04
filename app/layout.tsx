@@ -108,6 +108,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <script dangerouslySetInnerHTML={{__html: `(function() { try { const theme = localStorage.getItem('theme-mode') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); if (theme === 'dark') document.documentElement.classList.add('dark'); } catch(e) {} })();`}} />
       </head>
       <body className={`${inter.className} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
