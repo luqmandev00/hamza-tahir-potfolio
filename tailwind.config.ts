@@ -17,6 +17,15 @@ const config: Config = {
         "2xl": "1400px",
       },
     },
+    // Suppress deprecated color warnings by explicitly mapping them
+    colors: {
+      // Map deprecated names to their new equivalents
+      lightBlue: "#bae6fd", // maps to sky
+      warmGray: "#fafaf9", // maps to stone
+      trueGray: "#fafafa", // maps to neutral
+      coolGray: "#f9fafb", // maps to gray
+      blueGray: "#f8fafc", // maps to slate
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
