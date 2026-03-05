@@ -302,7 +302,11 @@ export async function fetchProjectBySlug(slug: string) {
 
   try {
     return await withRetry(async () => {
-      const { data, error } = await supabase.from("projects").select("*").eq("slug", slug).single()
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, title, description, image_url, technologies, github_url, live_url, featured, slug, content, created_at")
+        .eq("slug", slug)
+        .single()
 
       if (error) throw error
       return data || mockProjects.find((p) => p.slug === slug) || null
@@ -368,7 +372,7 @@ export async function fetchBlogPostBySlug(slug: string) {
     return await withRetry(async () => {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("*")
+        .select("id, title, excerpt, content, image_url, published, slug, created_at, tags, category")
         .eq("slug", slug)
         .eq("published", true)
         .single()
@@ -390,7 +394,10 @@ export async function fetchSnippets() {
 
   try {
     return await withRetry(async () => {
-      const { data, error } = await supabase.from("code_snippets").select("*").order("created_at", { ascending: false })
+      const { data, error } = await supabase
+        .from("code_snippets")
+        .select("id, title, description, code, language, tags, featured, slug, created_at")
+        .order("created_at", { ascending: false })
 
       if (error) throw error
       return data || mockSnippets
@@ -450,7 +457,10 @@ export async function fetchServiceAreas() {
 
   try {
     return await withRetry(async () => {
-      const { data, error } = await supabase.from("service_areas").select("*").order("created_at", { ascending: false })
+      const { data, error } = await supabase
+        .from("service_areas")
+        .select("id, name, slug, description, content, meta_title, meta_description, created_at")
+        .order("created_at", { ascending: false })
 
       if (error) throw error
       return data || mockServiceAreas
@@ -571,7 +581,7 @@ export async function fetchHomeServices() {
     return await withRetry(async () => {
       const { data, error } = await supabase
         .from("services")
-        .select("*")
+        .select("id, title, description, icon, features, price_range, show_on_home")
         .eq("show_on_home", true)
         .order("created_at", { ascending: false })
 
