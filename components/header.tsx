@@ -34,14 +34,27 @@ const Header = () => {
 
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex items-center justify-center px-8 pointer-events-none">
+      {/* left name logo outside header */}
+      <Link href="/" className="pointer-events-auto mr-auto">
+        <span className="text-white font-bold text-sm">Hamza Tahir</span>
+      </Link>
+
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="flex items-center bg-[#0a0a0a]/80 backdrop-blur-md border border-white/10 rounded-full px-2 py-1.5 pointer-events-auto shadow-2xl"
       >
-        <Link href="/" className="mr-4">
-          <span className="text-white font-bold text-sm">Hamza Tahir</span>
+        {/* home icon inside header */}
+        <Link href="/" className="mr-2 pointer-events-auto">
+          <motion.div
+            whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+            className={`p-2.5 rounded-full transition-colors ${pathname === "/" ? "bg-white/10" : ""}`}
+          >
+            <Home className="w-4 h-4 text-white" />
+          </motion.div>
         </Link>
+        {/* separator */}
+        <div className="w-[1px] h-4 bg-white/10 mx-2" />
         <nav className="flex items-center gap-1">
           {navItems.map((item) => (
             <Link key={item.name} href={item.href}>
