@@ -241,7 +241,10 @@ export async function fetchProjects() {
 
   try {
     return await withRetry(async () => {
-      const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, title, description, image_url, technologies, featured, slug, created_at")
+        .order("created_at", { ascending: false })
 
       if (error) throw error
       return data || mockProjects
@@ -261,7 +264,7 @@ export async function fetchFeaturedProjects() {
     return await withRetry(async () => {
       const { data, error } = await supabase
         .from("projects")
-        .select("*")
+        .select("id, title, description, image_url, technologies, featured, slug, created_at")
         .eq("featured", true)
         .order("created_at", { ascending: false })
         .limit(6)
@@ -303,7 +306,7 @@ export async function fetchBlogPosts() {
     return await withRetry(async () => {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("*")
+        .select("id, title, excerpt, image_url, published, slug, created_at, tags")
         .eq("published", true)
         .order("created_at", { ascending: false })
 
@@ -325,7 +328,7 @@ export async function fetchFeaturedBlogPosts() {
     return await withRetry(async () => {
       const { data, error } = await supabase
         .from("blog_posts")
-        .select("*")
+        .select("id, title, excerpt, image_url, published, slug, created_at, tags")
         .eq("published", true)
         .order("created_at", { ascending: false })
         .limit(3)

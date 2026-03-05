@@ -41,6 +41,11 @@ export default function HomePage() {
     }
 
     preloadResources()
+    // Rapid transition for better UX
+    const timer = setTimeout(() => {
+      handleLoadingComplete()
+    }, 800)
+    return () => clearTimeout(timer)
   }, [])
 
   const handleLoadingComplete = () => {
