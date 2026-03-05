@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import PageProgress from "@/components/page-progress"
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import Header from "@/components/header"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -107,12 +108,13 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel=" apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className={`${inter.className} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
           <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <PageProgress />
+            <Header />
             <ScrollProgress />
             {children}
             <Toaster position="top-right" />
