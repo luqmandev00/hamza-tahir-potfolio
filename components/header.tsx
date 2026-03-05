@@ -33,23 +33,15 @@ const Header = () => {
   if (!mounted) return null
 
   return (
-    <div className="fixed top-6 left-0 right-0 z-50 flex items-center justify-between px-8 pointer-events-none">
+    <div className="fixed top-6 left-0 right-0 z-50 flex items-center justify-center px-8 pointer-events-none">
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="flex items-center bg-[#0a0a0a]/80 backdrop-blur-md border border-white/10 rounded-full px-2 py-1.5 pointer-events-auto shadow-2xl"
       >
-        <Link href="/">
-          <motion.div
-            whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-            className={`p-2.5 rounded-full transition-colors ${pathname === "/" ? "bg-white/10" : ""}`}
-          >
-            <Home className="w-4 h-4 text-white" />
-          </motion.div>
+        <Link href="/" className="mr-4">
+          <span className="text-white font-bold text-sm">Hamza Tahir</span>
         </Link>
-
-        <div className="w-[1px] h-4 bg-white/10 mx-2" />
-
         <nav className="flex items-center gap-1">
           {navItems.map((item) => (
             <Link key={item.name} href={item.href}>
@@ -75,7 +67,8 @@ const Header = () => {
         </motion.button>
       </motion.header>
 
-      <div className="hidden md:block text-white font-mono text-xl tracking-wider opacity-90">
+      {/* right time outside header */}
+      <div className="hidden md:block text-white font-mono text-xl tracking-wider opacity-90 ml-auto pointer-events-none">
         {time}
       </div>
     </div>

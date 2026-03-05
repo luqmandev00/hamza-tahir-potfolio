@@ -100,9 +100,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
   )
 }
 
+import { createServerClient } from "@/lib/supabase"
+
 export async function generateStaticParams() {
   try {
-    const { createServerClient } = await import("@/lib/supabase")
     const supabase = createServerClient()
 
     const { data: posts } = await supabase.from("blog_posts").select("slug").eq("published", true)

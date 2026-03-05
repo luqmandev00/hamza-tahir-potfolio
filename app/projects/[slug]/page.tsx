@@ -96,9 +96,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   )
 }
 
+import { createServerClient } from "@/lib/supabase"
+
 export async function generateStaticParams() {
   try {
-    const { createServerClient } = await import("@/lib/supabase")
     const supabase = createServerClient()
 
     const { data: projects } = await supabase.from("projects").select("slug").eq("published", true)

@@ -79,12 +79,13 @@ export default async function SnippetPage({ params }: SnippetPageProps) {
   )
 }
 
+import { createServerClient } from "@/lib/supabase"
+
 export async function generateStaticParams() {
   try {
-    const { createServerClient } = await import("@/lib/supabase")
     const supabase = createServerClient()
 
-    const { data: snippets } = await supabase.from("snippets").select("slug").eq("published", true)
+    const { data: snippets } = await supabase.from("code_snippets").select("slug").eq("published", true)
 
     return (
       snippets?.map((snippet) => ({

@@ -1,18 +1,17 @@
 "use client"
 
-import { notFound } from "next/navigation"
 import { MapPin, Clock, CheckCircle, Star, ArrowRight, Phone, Mail, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import OptimizedImage from "@/components/optimized-image"
-import { fetchServiceAreaBySlug } from "@/lib/supabase"
 
 interface ServiceAreaPageProps {
   params: {
     slug: string
   }
+  serviceArea: any // you can replace `any` with proper type if available
 }
 
 const coreServices = [
@@ -92,11 +91,10 @@ const portfolioProjects = [
   },
 ]
 
-export default async function ServiceAreaPageClient({ params }: ServiceAreaPageProps) {
-  const serviceArea = await fetchServiceAreaBySlug(params.slug)
-
+export default function ServiceAreaPageClient({ params, serviceArea }: ServiceAreaPageProps) {
   if (!serviceArea) {
-    notFound()
+    // If the server passed an invalid serviceArea we simply render null.
+    return null
   }
 
   const cityName = serviceArea.title.split(" in ")[1] || serviceArea.slug

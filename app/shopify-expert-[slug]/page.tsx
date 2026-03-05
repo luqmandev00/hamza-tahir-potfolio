@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 import { fetchServiceAreaBySlug } from "@/lib/supabase"
+import { createServerClient } from "@/lib/supabase"
 import ServiceAreaPageClient from "./ServiceAreaPageClient"
 
 interface ServiceAreaPageProps {
@@ -35,6 +37,27 @@ export async function generateMetadata({ params }: ServiceAreaPageProps): Promis
   }
 }
 
+export async function generateStaticParams() {
+  const supabase = createServerClient()
+  try {
+    const { data: serviceAreas } = await supabase
+      .from("service_areas")
+      .select("slug")
+      .eq("published", true)
+
+    return (
+      serviceAreas?.map((sa) => ({ slug: sa.slug })) || []
+    )
+  } catch (error) {
+    console.error("Error generating static params for service areas:", error)
+    return []
+  }
+}
+
 export default async function ServiceAreaPage({ params }: ServiceAreaPageProps) {
-  return <ServiceAreaPageClient params={params} />
+  const serviceArea = await fetchServiceAreaBySlug(params.slug)
+  if (!serviceArea) {
+    notFound()
+  }
+  return <ServiceAreaPageClient serviceArea={serviceArea} params={params} />
 }

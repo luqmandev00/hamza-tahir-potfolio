@@ -1,6 +1,23 @@
-"use client"
-
 import { createClient } from "@supabase/supabase-js"
+
+// Helper for creating a Supabase client on the server (used in
+// generateStaticParams and other server helpers). We intentionally
+// avoid "use client" in this module so that it can be imported from
+// both server and client components.
+export function createServerClient() {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+  const supabaseServiceKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn("⚠️ Supabase server environment variables are missing.")
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
+
+// note: the client-side `supabase` instance below continues to use
+// the public env vars for use in browser code.
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
