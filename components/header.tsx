@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "next-themes"
-import { Home, User, Briefcase, BookOpen, Image as ImageIcon, Sun, Moon } from "lucide-react"
+import { Home, User, Briefcase, BookOpen, Image as ImageIcon, Sun, Moon, Code } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -25,6 +25,7 @@ const Header = () => {
   const navItems = [
     { name: "About", href: "/#about", icon: User },
     { name: "Work", href: "/projects", icon: Briefcase },
+    { name: "Snippets", href: "/#snippets", icon: Code },
     { name: "Blog", href: "/blog", icon: BookOpen },
     { name: "Gallery", href: "/#gallery", icon: ImageIcon },
   ]

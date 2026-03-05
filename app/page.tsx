@@ -6,6 +6,7 @@ import Hero from "@/components/hero"
 import About from "@/components/about"
 import Services from "@/components/services"
 import Projects from "@/components/projects"
+import CodeSnippets from "@/components/code-snippets"
 import Blog from "@/components/blog"
 import Contact from "@/components/contact"
 import PageLoader from "@/components/page-loader"
@@ -75,6 +76,10 @@ export default function HomePage() {
 
               <LazySection animation="fade" delay={0.3}>
                 <Projects />
+              </LazySection>
+
+              <LazySection animation="slide-up" delay={0.35}>
+                <CodeSnippets />
               </LazySection>
 
               <LazySection animation="slide-up" delay={0.4}>
