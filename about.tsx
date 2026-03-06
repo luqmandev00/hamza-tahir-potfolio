@@ -40,27 +40,34 @@ const About = () => {
     </>
   )
 
-  const skills = settings.skills || [
-    "JavaScript/TypeScript",
-    "React/Next.js",
-    "WordPress",
-    "Shopify",
-    "PHP",
-    "Node.js",
-    "Python",
-    "Database Design",
-  ]
+  const skills = useMemo(
+    () =>
+      settings.skills || [
+        "JavaScript/TypeScript",
+        "React/Next.js",
+        "WordPress",
+        "Shopify",
+        "PHP",
+        "Node.js",
+        "Python",
+        "Database Design",
+      ],
+    [settings.skills],
+  )
 
-  const skillLevels: Record<string, number> = {
-    "JavaScript/TypeScript": 95,
-    "React/Next.js": 90,
-    WordPress: 95,
-    Shopify: 88,
-    PHP: 85,
-    "Node.js": 82,
-    Python: 78,
-    "Database Design": 85,
-  }
+  const skillLevels: Record<string, number> = useMemo(
+    () => ({
+      "JavaScript/TypeScript": 95,
+      "React/Next.js": 90,
+      WordPress: 95,
+      Shopify: 88,
+      PHP: 85,
+      "Node.js": 82,
+      Python: 78,
+      "Database Design": 85,
+    }),
+    [],
+  )
 
   const timeline = useMemo(
     () => [
@@ -193,7 +200,9 @@ const About = () => {
                   <span className="text-sm text-muted-foreground">Quick snapshot</span>
                 </div>
 
-                {bioContent}
+                <p className="text-base leading-relaxed text-muted-foreground">
+                  {bio}
+                </p>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {keyStats.map((stat) => {

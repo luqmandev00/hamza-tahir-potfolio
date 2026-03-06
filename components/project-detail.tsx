@@ -318,7 +318,7 @@ export default function ProjectDetail({ project }: ProjectDetailProps) {
               >
                 <QuoteForm
                   projectTitle={project.title}
-                  projectType={project.category.toLowerCase().replace(/\s+/g, "-")}
+                  projectType={(project.category || "").toLowerCase().replace(/\s+/g, "-")}
                 />
               </motion.div>
         </motion.div>
